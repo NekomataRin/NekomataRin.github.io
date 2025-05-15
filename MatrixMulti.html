@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhân Ma Trận</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1e1e2e;
+            margin: 0;
+            color: #e0e0e0;
+        }
+
+        .container {
+            background: #2a2a3c;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #cdd6f4;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        .matrix-section {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .matrix-container {
+            background: #353548;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .matrix-input {
+            display: grid;
+            gap: 8px;
+            position: relative;
+            padding: 10px;
+        }
+
+        .matrix-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 16px;
+            background: #45475a;
+            border: 2px solid #89b4fa;
+            border-radius: 6px;
+            color: #e0e0e0;
+            outline: none;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+
+        .matrix-input input:focus {
+            border-color: #f38ba8;
+            transform: scale(1.05);
+        }
+
+        .matrix-input input::placeholder {
+            color: #a0a0a0;
+            opacity: 0.7;
+        }
+
+        .size-input {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .size-input label {
+            font-weight: bold;
+            color: #cdd6f4;
+        }
+
+        .size-input input {
+            width: 70px;
+            padding: 8px;
+            background: #45475a;
+            border: 2px solid #89b4fa;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #89b4fa;
+            color: #1e1e2e;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 15px 0;
+        }
+
+        button:hover {
+            background-color: #b4befe;
+            transform: translateY(-2px);
+        }
+
+        #result, #error {
+            margin-top: 25px;
+            font-size: 18px;
+        }
+
+        #result-matrix {
+            display: inline-grid;
+            gap: 8px;
+            background: #353548;
+            padding: 15px;
+            border: 2px solid #89b4fa;
+            border-radius: 8px;
+        }
+
+        #result-matrix span {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background: #45475a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+
+        #error {
+            color: #f38ba8;
+            background: #3b2e3a;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        /* Nhãn chỉ số hàng/cột */
+        .matrix-labels {
+            position: relative;
+        }
+
+        .row-labels, .col-labels {
+            position: absolute;
+            color: #cdd6f4;
+            font-size: 12px;
+        }
+
+        .row-labels div {
+            height: 50px;
+            line-height: 50px;
+            margin-right: 5px;
+        }
+
+        .col-labels div {
+            width: 50px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nhân Ma Trận</h1>
+        
+        <div class="matrix-section">
+            <!-- Ma trận A -->
+            <div class="matrix-container">
+                <h2>Ma trận A</h2>
+                <div class="size-input">
+                    <label>Kích thước: </label>
+                    <input type="number" id="rowsA" min="1" value="2" placeholder="Hàng">
+                    <input type="number" id="colsA" min="1" value="3" placeholder="Cột">
+                </div>
+                <div class="matrix-labels">
+                    <div id="matrixA" class="matrix-input" style="grid-template-columns: repeat(3, 60px);">
+                        <input type="number" placeholder="A11">
+                        <input type="number" placeholder="A12">
+                        <input type="number" placeholder="A13">
+                        <input type="number" placeholder="A21">
+                        <input type="number" placeholder="A22">
+                        <input type="number" placeholder="A23">
+                    </div>
+                    <div class="row-labels" id="row-labels-A"></div>
+                    <div class="col-labels" id="col-labels-A"></div>
+                </div>
+            </div>
+
+            <!-- Ma trận B -->
+            <div class="matrix-container">
+                <h2>Ma trận B</h2>
+                <div class="size-input">
+                    <label>Kích thước: </label>
+                    <input type="number" id="rowsB" min="1" value="3" placeholder="Hàng">
+                    <input type="number" id="colsB" min="1" value="2" placeholder="Cột">
+                </div>
+                <div class="matrix-labels">
+                    <div id="matrixB" class="matrix-input" style="grid-template-columns: repeat(2, 60px);">
+                        <input type="number" placeholder="B11">
+                        <input type="number" placeholder="B12">
+                        <input type="number" placeholder="B21">
+                        <input type="number" placeholder="B22">
+                        <input type="number" placeholder="B31">
+                        <input type="number" placeholder="B32">
+                    </div>
+                    <div class="row-labels" id="row-labels-B"></div>
+                    <div class="col-labels" id="col-labels-B"></div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="multiplyMatrices()">Nhân Ma Trận</button>
+
+        <div id="result">
+            <h2>Kết quả</h2>
+            <div id="result-matrix"></div>
+        </div>
+        <div id="error"></div>
+    </div>
+
+    <script>
+        // Hàm cập nhật ma trận dựa trên kích thước mới
+        function updateMatrix(matrixId) {
+            const rows = parseInt(document.getElementById(`rows${matrixId}`).value) || 1;
+            const cols = parseInt(document.getElementById(`cols${matrixId}`).value) || 1;
+            const matrixDiv = document.getElementById(`matrix${matrixId}`);
+            const rowLabels = document.getElementById(`row-labels-${matrixId}`);
+            const colLabels = document.getElementById(`col-labels-${matrixId}`);
+
+            // Kiểm tra giá trị hợp lệ
+            if (rows < 1 || cols < 1) return;
+
+            // Lưu giá trị hiện tại (nếu có)
+            const oldInputs = matrixDiv.querySelectorAll('input');
+            const oldValues = [];
+            oldInputs.forEach(input => oldValues.push(input.value));
+
+            // Tạo lưới input mới
+            matrixDiv.innerHTML = '';
+            matrixDiv.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.placeholder = `${matrixId}${i+1}${j+1}`;
+                    // Giữ lại giá trị cũ nếu có
+                    const index = i * cols + j;
+                    if (index < oldValues.length && oldValues[index] !== '') {
+                        input.value = oldValues[index];
+                    }
+                    matrixDiv.appendChild(input);
+                }
+            }
+        }
+
+        function multiplyMatrices() {
+            // Lấy kích thước ma trận
+            const rowsA = parseInt(document.getElementById('rowsA').value);
+            const colsA = parseInt(document.getElementById('colsA').value);
+            const rowsB = parseInt(document.getElementById('rowsB').value);
+            const colsB = parseInt(document.getElementById('colsB').value);
+
+            // Kiểm tra điều kiện nhân
+            const errorDiv = document.getElementById('error');
+            const resultMatrix = document.getElementById('result-matrix');
+            errorDiv.style.display = 'none';
+            resultMatrix.innerHTML = '';
+
+            if (colsA !== rowsB) {
+                errorDiv.textContent = 'Lỗi: Số cột của A phải bằng số hàng của B!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Lấy giá trị ma trận A (coi ô trống là 0)
+            const matrixAInputs = document.querySelectorAll('#matrixA input');
+            const matrixA = [];
+            for (let i = 0; i < rowsA; i++) {
+                const row = [];
+                for (let j = 0; j < colsA; j++) {
+                    const value = matrixAInputs[i * colsA + j].value === '' ? 0 : parseFloat(matrixAInputs[i * colsA + j].value);
+                    row.push(isNaN(value) ? 0 : value);
+                }
+                matrixA.push(row);
+            }
+
+            // Lấy giá trị ma trận B (coi ô trống là 0)
+            const matrixBInputs = document.querySelectorAll('#matrixB input');
+            const matrixB = [];
+            for (let i = 0; i < rowsB; i++) {
+                const row = [];
+                for (let j = 0; j < colsB; j++) {
+                    const value = matrixBInputs[i * colsB + j].value === '' ? 0 : parseFloat(matrixBInputs[i * colsB + j].value);
+                    row.push(isNaN(value) ? 0 : value);
+                }
+                matrixB.push(row);
+            }
+
+            // Tính ma trận kết quả
+            const result = [];
+            for (let i = 0; i < rowsA; i++) {
+                const row = [];
+                for (let j = 0; j < colsB; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < colsA; k++) {
+                        sum += matrixA[i][k] * matrixB[k][j];
+                    }
+                    row.push(sum);
+                }
+                result.push(row);
+            }
+
+            // Hiển thị ma trận kết quả
+            resultMatrix.style.gridTemplateColumns = `repeat(${colsB}, 60px)`;
+            for (let i = 0; i < rowsA; i++) {
+                for (let j = 0; j < colsB; j++) {
+                    const span = document.createElement('span');
+                    span.textContent = result[i][j];
+                    resultMatrix.appendChild(span);
+                }
+            }
+        }
+
+        // Khởi tạo ma trận ban đầu
+        document.addEventListener('DOMContentLoaded', function() {
+            updateMatrix('A');
+            updateMatrix('B');
+            
+            // Gắn sự kiện thay đổi kích thước
+            document.getElementById('rowsA').addEventListener('input', () => updateMatrix('A'));
+            document.getElementById('colsA').addEventListener('input', () => updateMatrix('A'));
+            document.getElementById('rowsB').addEventListener('input', () => updateMatrix('B'));
+            document.getElementById('colsB').addEventListener('input', () => updateMatrix('B'));
+        });
+    </script>
+</body>
+</html>
