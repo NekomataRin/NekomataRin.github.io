@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải thích: Cofactor \( C_{12} \) của Ma trận</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax CDN -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .container {
+            background-color: #2d3748;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        h1, h2 {
+            color: #f56565;
+        }
+        .mathjax-formula {
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="container w-full max-w-3xl">
+        <h1 class="text-2xl font-bold text-center mb-6">Giải thích: Cofactor \( C_{12} \) của Ma trận</h1>
+        
+        <h2 class="text-xl font-semibold mb-4">Câu hỏi:</h2>
+        <div class="mathjax-formula mb-4">
+            Tìm cofactor \( C_{12} \) của ma trận \( A = \begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{bmatrix} \).
+        </div>
+
+        <h2 class="text-xl font-semibold mb-4">Giải thích từng bước:</h2>
+        <div class="space-y-4">
+            <p>Cofactor \( C_{12} \) được tính bằng công thức: \( C_{ij} = (-1)^{i+j} \times M_{ij} \), trong đó \( M_{ij} \) là minor.</p>
+            <p>Đối với \( C_{12} \), ta có \( i = 1 \), \( j = 2 \), nên \( (-1)^{1+2} = (-1)^3 = -1 \).</p>
+            <p>Tìm minor \( M_{12} \): Xóa hàng 1 và cột 2, ta được ma trận con: \( \begin{bmatrix} 4 & 6 \\ 7 & 9 \end{bmatrix} \).</p>
+            <p>Tính định thức: \( \text{det} = (4 \times 9) - (6 \times 7) = 36 - 42 = -6 \).</p>
+            <p>Vậy \( C_{12} = (-1) \times (-6) = 6 \).</p>
+        </div>
+
+        <h2 class="text-xl font-semibold mt-6 mb-4">Đáp án đúng:</h2>
+        <div class="mathjax-formula text-center">
+            \( C_{12} = 6 \) (Đáp án: A).
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            MathJax.typeset();
+        });
+    </script>
+</body>
+</html>
