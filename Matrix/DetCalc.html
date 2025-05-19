@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Định Thức Ma Trận</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+        input[type="number"] {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+        button {
+            transition: background-color 0.2s;
+        }
+        .mathjax {
+            font-size: 1rem;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        #result {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4a5568 #2d3748;
+        }
+        #result::-webkit-scrollbar {
+            width: 8px;
+        }
+        #result::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        #result::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        #result ol li {
+            background-color: #2d3748;
+            padding: 0.75rem;
+            border-left: 4px solid #3182ce;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            word-wrap: break-word;
+        }
+        .mathjax mjx-container {
+            display: inline-block !important;
+            max-width: 100%;
+        }
+        /* Tối ưu ô nhập liệu cho ma trận lớn */
+        #matrix-inputs input {
+            width: 60px;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 640px) {
+            #matrix-inputs input {
+                width: 50px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-5xl bg-gray-800 rounded-lg shadow-xl p-6">
+        <h1 class="text-2xl font-bold text-center mb-6">Tính Định Thức Ma Trận</h1>
+        
+        <!-- Chọn kích thước ma trận -->
+        <div class="mb-4">
+            <label for="matrix-size" class="block text-sm font-medium mb-2">Kích thước ma trận (số nguyên dương):</label>
+            <input type="number" id="matrix-size" min="1" value="3" 
+                   class="w-24 p-2 rounded-md" onchange="generateMatrixInputs()">
+        </div>
+
+        <!-- Ma trận nhập liệu -->
+        <div id="matrix-inputs" class="grid gap-2 mb-6 overflow-x-auto" style="grid-template-columns: repeat(3, minmax(60px, 1fr));"></div>
+
+        <!-- Nút tính toán -->
+        <div class="text-center">
+            <button onclick="calculateDeterminant()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">
+                Tính Định Thức
+            </button>
+        </div>
+
+        <!-- Kết quả -->
+        <div id="result" class="mt-6 p-4 bg-gray-700 rounded-md hidden">
+            <h2 class="text-lg font-semibold mb-2">Kết quả:</h2>
+            <div id="result-text"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tạo các ô nhập liệu cho ma trận
+        function generateMatrixInputs() {
+            const size = parseInt(document.getElementById('matrix-size').value);
+            if (isNaN(size) || size < 1) {
+                alert('Vui lòng nhập kích thước là số nguyên dương.');
+                document.getElementById('matrix-size').value = 3;
+                return;
+            }
+            if (size > 10) {
+                alert('Cảnh báo: Ma trận lớn (>' + 10 + 'x' + 10 + ') có thể tốn nhiều thời gian tính toán.');
+            }
+
+            const matrixInputs = document.getElementById('matrix-inputs');
+            matrixInputs.style.gridTemplateColumns = `repeat(${size}, minmax(60px, 1fr))`;
+            matrixInputs.innerHTML = '';
+
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    matrixInputs.innerHTML += `
+                        <input type="number" id="cell-${i}-${j}" value="0" 
+                               class="p-2 rounded-md text-center" placeholder="a[${i+1}][${j+1}]">
+                    `;
+                }
+            }
+        }
+
+        // Hàm tính định thức
+        function calculateDeterminant() {
+            const size = parseInt(document.getElementById('matrix-size').value);
+            if (isNaN(size) || size < 1) {
+                alert('Vui lòng nhập kích thước hợp lệ.');
+                return;
+            }
+
+            const matrix = [];
+
+            // Lấy giá trị từ input
+            for (let i = 0; i < size; i++) {
+                matrix[i] = [];
+                for (let j = 0; j < size; j++) {
+                    const value = parseFloat(document.getElementById(`cell-${i}-${j}`).value) || 0;
+                    matrix[i][j] = value;
+                }
+            }
+
+            // Hiển thị ma trận đầu vào
+            let matrixTex = '\\[ A = \\begin{bmatrix} ';
+            for (let i = 0; i < size; i++) {
+                matrixTex += matrix[i].map(x => x.toString()).join(' & ');
+                if (i < size - 1) matrixTex += ' \\\\ ';
+            }
+            matrixTex += ' \\end{bmatrix} \\]';
+
+            // Tính định thức và lưu các bước
+            const steps = [matrixTex];
+            const det = determinant(matrix, size, steps);
+
+            // Hiển thị kết quả
+            let resultText = `<p class="mathjax">Định thức: \\[ \\det(A) = ${det} \\]</p>`;
+            resultText += '<h3>Các bước tính toán:</h3>';
+            resultText += '<ol>';
+            steps.forEach(step => {
+                resultText += `<li class="mathjax">${step}</li>`;
+            });
+            resultText += '</ol>';
+
+            const resultDiv = document.getElementById('result');
+            document.getElementById('result-text').innerHTML = resultText;
+            resultDiv.classList.remove('hidden');
+
+            // Kích hoạt MathJax để render LaTeX
+            MathJax.typeset();
+        }
+
+        // Hàm tính định thức đệ quy
+        function determinant(matrix, n, steps) {
+            if (n === 1) {
+                return matrix[0][0];
+            }
+            if (n === 2) {
+                const det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+                steps.push(`Ma trận 2x2: \\[ \\det(A) = ${matrix[0][0]} \\times ${matrix[1][1]} - ${matrix[0][1]} \\times ${matrix[1][0]} = ${det} \\]`);
+                return det;
+            }
+
+            let det = 0;
+            let terms = [];
+
+            for (let j = 0; j < n; j++) {
+                const minor = getMinor(matrix, 0, j);
+                const minorDet = determinant(minor, n - 1, steps);
+                const cofactor = Math.pow(-1, 1 + (j + 1)) * matrix[0][j] * minorDet;
+                if (matrix[0][j] !== 0) {
+                    // Hiển thị ma trận con
+                    let minorTex = `Ma trận con \\( M_{1${j+1}} \\): \\[ \\begin{bmatrix} `;
+                    for (let i = 0; i < n - 1; i++) {
+                        minorTex += minor[i].map(x => x.toString()).join(' & ');
+                        if (i < n - 2) minorTex += ' \\\\ ';
+                    }
+                    minorTex += ' \\end{bmatrix} \\]';
+                    steps.push(minorTex);
+                    steps.push(`Cofactor \\( C_{1${j+1}} = (-1)^{1+${j+1}} \\times ${matrix[0][j]} \\times \\det(M_{1${j+1}}) = ${cofactor} \\)`);
+                    terms.push(`${matrix[0][j]} \\times (-1)^{1+${j+1}} \\times \\det(M_{1${j+1}})`);
+                }
+                det += cofactor;
+            }
+
+            steps.push(`Phát triển theo hàng 1: \\[ \\det(A) = ${terms.join(' + ')} = ${det} \\]`);
+            return det;
+        }
+
+        // Lấy ma trận con (minor)
+        function getMinor(matrix, row, col) {
+            const minor = [];
+            for (let i = 0; i < matrix.length; i++) {
+                if (i === row) continue;
+                minor[i - (i > row ? 1 : 0)] = [];
+                for (let j = 0; j < matrix.length; j++) {
+                    if (j === col) continue;
+                    minor[i - (i > row ? 1 : 0)][j - (j > col ? 1 : 0)] = matrix[i][j];
+                }
+            }
+            return minor;
+        }
+
+        // Khởi tạo ma trận mặc định 3x3
+        generateMatrixInputs();
+    </script>
+</body>
+</html>
