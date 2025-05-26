@@ -38,7 +38,8 @@
     <button id="gaussianREFBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded mb-4">Khử Gauss (REF)</button>
     <button id="gaussianRREFBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded mb-4">Khử Gauss (RREF)</button>
     <div id="stepControls" class="mb-4 flex gap-2 hidden">
-      <button id="prevStepBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Bước trước</button>
+      <button id="prevStepBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded disabled">Bước trước</button>
+      <span id="stepCounter" class="flex items-center px-2">0/0</span>
       <button id="nextStepBtn" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">Bước tiếp theo</button>
     </div>
   </div>
@@ -68,9 +69,10 @@
       document.getElementById('nextStepBtn').addEventListener('click', nextStep);
     });
 
-    let matrix = [];
+    let originalMatrix = [];
     let steps = [];
     let currentStep = 0;
+    let isRREFMode = false;
 
     function generateMatrix() {
       const rowsInput = document.getElementById('rows');
@@ -159,7 +161,7 @@
     }
 
     function reset() {
-      matrix = [];
+      originalMatrix = [];
       steps = [];
       currentStep = 0;
       document.getElementById('matrixInputs').innerHTML = '';
@@ -171,12 +173,23 @@
       document.getElementById('cols').value = '3';
     }
 
-    function startGaussian(isRREF) {
-      matrix = getMatrixFromInputs();
-      if (!matrix) return;
-      steps = buildGaussianSteps(matrix.map(row => row.map(el => math.clone(el))), isRREF);
+    function startGaussian(rrefMode) {
+      isRREFMode = rrefMode;
+      
+      // Lấy ma trận từ input
+      const inputMatrix = getMatrixFromInputs();
+      if (!inputMatrix) return;
+
+      // Lưu ma trận gốc
+      originalMatrix = cloneMatrix(inputMatrix);
+      
+      // Tạo các bước tính toán
+      steps = buildGaussianSteps(cloneMatrix(inputMatrix), rrefMode);
+      
+      // Reset về bước đầu tiên
       currentStep = 0;
       document.getElementById('stepControls').classList.remove('hidden');
+      updateStepCounter();
       nextStep();
     }
 
@@ -186,6 +199,12 @@
       const n = mat[0].length;
       let r = 0;
       const pivots = [];
+
+      // Thêm bước đầu tiên (ma trận ban đầu)
+      steps.push({
+        mat: cloneMatrix(mat),
+        explain: "🔹 Ma trận ban đầu trước khi thực hiện phép khử Gauss."
+      });
 
       // Giai đoạn khử xuôi (Forward Elimination)
       for (let c = 0; c < n; c++) {
@@ -201,7 +220,7 @@
         if (pivotRow === -1) {
           steps.push({
             mat: cloneMatrix(mat),
-            explain: `Cột ${c + 1} không có phần tử khác 0 từ hàng ${r + 1} trở xuống. Chuyển sang cột tiếp theo.`
+            explain: `🔍 Cột ${c + 1} không có phần tử khác 0 từ hàng ${r + 1} trở xuống. Chuyển sang cột tiếp theo.`
           });
           continue;
         }
@@ -296,34 +315,43 @@
       return mat.map(row => row.map(el => math.clone(el)));
     }
 
-    function nextStep() {
-      if (currentStep >= steps.length) {
-        const finalMessage = steps[steps.length - 1].explain;
-        document.getElementById('explanation').innerHTML = finalMessage;
-        document.getElementById('stepControls').querySelector('button[id="nextStepBtn"]').classList.add('disabled');
-        return;
+    function updateStepCounter() {
+      document.getElementById('stepCounter').textContent = `${currentStep}/${steps.length}`;
+      
+      // Cập nhật trạng thái các nút
+      const prevBtn = document.getElementById('prevStepBtn');
+      const nextBtn = document.getElementById('nextStepBtn');
+      
+      if (currentStep <= 1) {
+        prevBtn.classList.add('disabled');
+      } else {
+        prevBtn.classList.remove('disabled');
       }
+      
+      if (currentStep >= steps.length) {
+        nextBtn.classList.add('disabled');
+      } else {
+        nextBtn.classList.remove('disabled');
+      }
+    }
+
+    function nextStep() {
+      if (currentStep >= steps.length) return;
+      
       const step = steps[currentStep];
       displayMatrix(step.mat);
       document.getElementById('explanation').innerHTML = step.explain;
       MathJax.typesetPromise();
       currentStep++;
-      document.getElementById('stepControls').querySelector('button[id="prevStepBtn"]').classList.remove('disabled');
+      updateStepCounter();
     }
 
     function prevStep() {
-      if (currentStep <= 1) {
-        currentStep = 0;
-        document.getElementById('stepControls').querySelector('button[id="prevStepBtn"]').classList.add('disabled');
-        return;
-      }
+      if (currentStep <= 1) return;
+      
       currentStep -= 2;
-      const step = steps[currentStep];
-      displayMatrix(step.mat);
-      document.getElementById('explanation').innerHTML = step.explain;
-      MathJax.typesetPromise();
-      currentStep++;
-      document.getElementById('stepControls').querySelector('button[id="nextStepBtn"]').classList.remove('disabled');
+      updateStepCounter();
+      nextStep();
     }
   </script>
 </body>
