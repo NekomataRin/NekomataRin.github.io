@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -89,11 +50,11 @@
     <h2 class="text-md font-semibold mb-2">📘 Chú giải:</h2>
     <ul class="list-disc pl-6 space-y-1">
       <li>🔄 <strong>Hoán đổi hàng</strong>: Đổi chỗ hai hàng, ví dụ: \( R_i \leftrightarrow R_j \), để đưa phần tử khác 0 vào vị trí pivot.</li>
-      <li>⚖️ <strong>Chia hàng</strong>: Chia hàng cho một số, ví dụ: \( R_i \gets \frac{R_i}{k} \), để biến pivot thành 1.</li>
+      <li>⚖️ <strong>Chia hàng</strong> (chỉ trong RREF): Chia hàng cho một số, ví dụ: \( R_i \gets \frac{R_i}{k} \), để biến pivot thành 1.</li>
       <li>➖ <strong>Loại phần tử (dưới)</strong>: Khử phần tử dưới pivot, ví dụ: \( R_i \gets R_i - k \cdot R_p \), để biến các phần tử dưới pivot thành 0.</li>
       <li>⬆️ <strong>Loại phần tử (trên)</strong>: Khử phần tử trên pivot, ví dụ: \( R_i \gets R_i - k \cdot R_p \), để biến các phần tử trên pivot thành 0 (RREF).</li>
-      <li>✅ <strong>Hoàn tất (REF)</strong>: Ma trận đạt dạng bậc thang, với pivot = 1 và các phần tử dưới pivot = 0.</li>
-      <li>✅ <strong>Hoàn tất (RREF)</strong>: Ma trận đạt dạng bậc thang rút gọn, với pivot = 1 và tất cả phần tử khác trong cột pivot = 0.</li>
+      <li>✅ <strong>Hoàn tất (REF)</strong>: Ma trận đạt dạng bậc thang, với các phần tử dưới pivot bằng 0.</li>
+      <li>✅ <strong>Hoàn tất (RREF)</strong>: Ma trận đạt dạng bậc thang rút gọn, với pivot bằng 1 và tất cả phần tử khác trong cột pivot bằng 0.</li>
     </ul>
   </div>
 
@@ -258,7 +219,7 @@
         }
 
         const pivot = mat[r][c];
-        if (!math.equal(pivot, 1)) {
+        if (isRREF && !math.equal(pivot, 1)) {
           const rowBefore = formatRow(mat[r]);
           mat[r] = mat[r].map(x => math.divide(x, pivot));
           const rowAfter = formatRow(mat[r]);
@@ -272,7 +233,7 @@
 
         for (let i = r + 1; i < m; i++) {
           if (!math.equal(mat[i][c], 0)) {
-            const factor = mat[i][c];
+            const factor = isRREF ? mat[i][c] : math.divide(mat[i][c], mat[r][c]);
             const rowPivot = formatRow(mat[r]);
             const rowBefore = formatRow(mat[i]);
             for (let j = 0; j < n; j++) {
@@ -324,7 +285,7 @@
       } else {
         steps.push({
           mat: cloneMatrix(mat),
-          explain: `✅ Hoàn tất (REF): Ma trận đã đạt dạng bậc thang, với tất cả pivot bằng 1 và các phần tử dưới pivot bằng 0.`
+          explain: `✅ Hoàn tất (REF): Ma trận đã đạt dạng bậc thang, với các phần tử dưới pivot bằng 0.`
         });
       }
 
