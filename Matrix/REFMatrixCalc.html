@@ -1,0 +1,369 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phép Khử Gauss</title>
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.min.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #111827; color: white; }
+    input { background-color: #1f2937; color: white; border: 1px solid #374151; padding: 0.5rem; }
+    input.invalid { border-color: #ef4444; }
+    .disabled { opacity: 0.5; pointer-events: none; }
+    #explanation { line-height: 1.6; }
+  </style>
+</head>
+<body class="p-6">
+  <h1 class="text-2xl font-bold mb-4">🧮 Phép Khử Gauss</h1>
+
+  <div class="mb-4 flex items-center gap-4">
+    <label>Số hàng: <input id="rows" type="number" min="1" value="3" class="w-16 ml-2"></label>
+    <label>Số cột: <input id="cols" type="number" min="1" value="3" class="w-16 ml-2"></label>
+    <button id="generateMatrixBtn" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded">Tạo Ma trận</button>
+    <button id="resetBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">Đặt lại</button>
+  </div>
+
+  <div id="error" class="text-red-400 mb-4 hidden"></div>
+  <div id="matrixInputs" class="mb-6 space-y-2"></div>
+
+  <div class="flex gap-4">
+    <button id="gaussianREFBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded mb-4">Khử Gauss (REF)</button>
+    <button id="gaussianRREFBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded mb-4">Khử Gauss (RREF)</button>
+    <div id="stepControls" class="mb-4 flex gap-2 hidden">
+      <button id="prevStepBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Bước trước</button>
+      <button id="nextStepBtn" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded">Bước tiếp theo</button>
+    </div>
+  </div>
+
+  <div id="matrixDisplay" class="my-6 text-lg"></div>
+  <div id="explanation" class="text-indigo-400 text-md font-mono mb-4"></div>
+
+  <div id="legend" class="mt-6 text-sm text-gray-400 border-t border-gray-600 pt-4">
+    <h2 class="text-md font-semibold mb-2">📘 Chú giải:</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>🔄 <strong>Hoán đổi hàng</strong>: Đổi chỗ hai hàng, ví dụ: \( R_i \leftrightarrow R_j \), để đưa phần tử khác 0 vào vị trí pivot.</li>
+      <li>⚖️ <strong>Chia hàng</strong>: Chia hàng cho một số, ví dụ: \( R_i \gets \frac{R_i}{k} \), để biến pivot thành 1.</li>
+      <li>➖ <strong>Loại phần tử (dưới)</strong>: Khử phần tử dưới pivot, ví dụ: \( R_i \gets R_i - k \cdot R_p \), để biến các phần tử dưới pivot thành 0.</li>
+      <li>⬆️ <strong>Loại phần tử (trên)</strong>: Khử phần tử trên pivot, ví dụ: \( R_i \gets R_i - k \cdot R_p \), để biến các phần tử trên pivot thành 0 (RREF).</li>
+      <li>✅ <strong>Hoàn tất (REF)</strong>: Ma trận đạt dạng bậc thang, với pivot = 1 và các phần tử dưới pivot = 0.</li>
+      <li>✅ <strong>Hoàn tất (RREF)</strong>: Ma trận đạt dạng bậc thang rút gọn, với pivot = 1 và tất cả phần tử khác trong cột pivot = 0.</li>
+    </ul>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('generateMatrixBtn').addEventListener('click', generateMatrix);
+      document.getElementById('resetBtn').addEventListener('click', reset);
+      document.getElementById('gaussianREFBtn').addEventListener('click', () => startGaussian(false));
+      document.getElementById('gaussianRREFBtn').addEventListener('click', () => startGaussian(true));
+      document.getElementById('prevStepBtn').addEventListener('click', prevStep);
+      document.getElementById('nextStepBtn').addEventListener('click', nextStep);
+    });
+
+    let matrix = [];
+    let steps = [];
+    let currentStep = 0;
+
+    function generateMatrix() {
+      const rowsInput = document.getElementById('rows');
+      const colsInput = document.getElementById('cols');
+      const errorDiv = document.getElementById('error');
+      const rows = parseInt(rowsInput.value);
+      const cols = parseInt(colsInput.value);
+
+      if (!rows || !cols || rows < 1 || cols < 1) {
+        errorDiv.textContent = 'Vui lòng nhập số hàng và cột hợp lệ (số nguyên dương).';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+      const container = document.getElementById('matrixInputs');
+      container.innerHTML = '';
+
+      for (let i = 0; i < rows; i++) {
+        const row = document.createElement('div');
+        row.className = "flex gap-2";
+        for (let j = 0; j < cols; j++) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.id = `cell-${i}-${j}`;
+          input.className = 'w-16 text-center';
+          input.placeholder = '0';
+          input.addEventListener('input', validateInput);
+          row.appendChild(input);
+        }
+        container.appendChild(row);
+      }
+    }
+
+    function validateInput(e) {
+      const input = e.target;
+      const value = input.value;
+      if (value && !/^-?\d*\/?\d*$/.test(value)) {
+        input.classList.add('invalid');
+      } else {
+        input.classList.remove('invalid');
+      }
+    }
+
+    function getMatrixFromInputs() {
+      const rows = parseInt(document.getElementById('rows').value);
+      const cols = parseInt(document.getElementById('cols').value);
+      const matrix = [];
+      const errorDiv = document.getElementById('error');
+
+      for (let i = 0; i < rows; i++) {
+        const row = [];
+        for (let j = 0; j < cols; j++) {
+          const input = document.getElementById(`cell-${i}-${j}`);
+          const val = input.value || '0';
+          try {
+            row.push(math.fraction(val));
+            input.classList.remove('invalid');
+          } catch (e) {
+            input.classList.add('invalid');
+            errorDiv.textContent = `Giá trị không hợp lệ tại hàng ${i + 1}, cột ${j + 1}. Vui lòng nhập số hoặc phân số.`;
+            errorDiv.classList.remove('hidden');
+            return null;
+          }
+        }
+        matrix.push(row);
+      }
+      errorDiv.classList.add('hidden');
+      return matrix;
+    }
+
+    function formatFraction(el) {
+      return math.equal(el.d, 1) ? `${el.n}` : `\\frac{${el.n}}{${el.d}}`;
+    }
+
+    function formatRow(row) {
+      return `\\begin{bmatrix} ${row.map(el => formatFraction(el)).join(' & ')} \\end{bmatrix}`;
+    }
+
+    function displayMatrix(mat) {
+      let latex = '\\[\\begin{bmatrix}';
+      latex += mat.map(row => row.map(el => formatFraction(el)).join(' & ')).join(' \\\\ ');
+      latex += '\\end{bmatrix}\\]';
+      document.getElementById('matrixDisplay').innerHTML = latex;
+      MathJax.typesetPromise();
+    }
+
+    function reset() {
+      matrix = [];
+      steps = [];
+      currentStep = 0;
+      document.getElementById('matrixInputs').innerHTML = '';
+      document.getElementById('matrixDisplay').innerHTML = '';
+      document.getElementById('explanation').innerHTML = '';
+      document.getElementById('stepControls').classList.add('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('rows').value = '3';
+      document.getElementById('cols').value = '3';
+    }
+
+    function startGaussian(isRREF) {
+      matrix = getMatrixFromInputs();
+      if (!matrix) return;
+      steps = buildGaussianSteps(matrix.map(row => row.map(el => math.clone(el))), isRREF);
+      currentStep = 0;
+      document.getElementById('stepControls').classList.remove('hidden');
+      nextStep();
+    }
+
+    function buildGaussianSteps(mat, isRREF) {
+      const steps = [];
+      const m = mat.length;
+      const n = mat[0].length;
+      let r = 0;
+      const pivots = [];
+
+      // Giai đoạn khử xuôi (Forward Elimination)
+      for (let c = 0; c < n; c++) {
+        let pivotRow = -1;
+        let pivotValue = 0;
+        for (let i = r; i < m; i++) {
+          if (!math.equal(mat[i][c], 0)) {
+            pivotRow = i;
+            pivotValue = mat[i][c];
+            break;
+          }
+        }
+        if (pivotRow === -1) {
+          steps.push({
+            mat: cloneMatrix(mat),
+            explain: `Cột ${c + 1} không có phần tử khác 0 từ hàng ${r + 1} trở xuống. Chuyển sang cột tiếp theo.`
+          });
+          continue;
+        }
+
+        if (pivotRow !== r) {
+          const rowBefore = formatRow(mat[pivotRow]);
+          const rowSwap = formatRow(mat[r]);
+          [mat[r], mat[pivotRow]] = [mat[pivotRow], mat[r]];
+          steps.push({
+            mat: cloneMatrix(mat),
+            explain: `🔄 Hoán đổi hàng ${r + 1} với hàng ${pivotRow + 1} để đưa phần tử khác 0 (${formatFraction(pivotValue)}) vào vị trí pivot ở cột ${c + 1}. ` +
+                     `Trước: \\( R_${r + 1} = ${rowSwap}, R_${pivotRow + 1} = ${rowBefore} \\). ` +
+                     `Công thức: \\( R_${r + 1} \\leftrightarrow R_${pivotRow + 1} \\).`
+          });
+        }
+
+        const pivot = mat[r][c];
+        if (!math.equal(pivot, 1)) {
+          const rowBefore = formatRow(mat[r]);
+          mat[r] = mat[r].map(x => math.divide(x, pivot));
+          const rowAfter = formatRow(mat[r]);
+          steps.push({
+            mat: cloneMatrix(mat),
+            explain: `⚖️ Chia hàng ${r + 1} cho ${formatFraction(pivot)} để biến phần tử tại (${r + 1}, ${c + 1}) thành 1 (pivot). ` +
+                     `Trước: \\( R_${r + 1} = ${rowBefore} \\). Sau: \\( R_${r + 1} = ${rowAfter} \\). ` +
+                     `Công thức: \\( R_${r + 1} \\gets \\frac{R_${r + 1}}{${formatFraction(pivot)}} \\).`
+          });
+        }
+
+        for (let i = r + 1; i < m; i++) {
+          if (!math.equal(mat[i][c], 0)) {
+            const factor = mat[i][c];
+            const rowPivot = formatRow(mat[r]);
+            const rowBefore = formatRow(mat[i]);
+            for (let j = 0; j < n; j++) {
+              mat[i][j] = math.subtract(mat[i][j], math.multiply(factor, mat[r][j]));
+            }
+            const rowAfter = formatRow(mat[i]);
+            steps.push({
+              mat: cloneMatrix(mat),
+              explain: `➖ Lấy hàng ${i + 1} trừ ${formatFraction(factor)} lần hàng ${r + 1} để biến phần tử tại (${i + 1}, ${c + 1}) thành 0 (khử dưới pivot). ` +
+                       `Hàng pivot: \\( R_${r + 1} = ${rowPivot} \\). ` +
+                       `Trước: \\( R_${i + 1} = ${rowBefore} \\). Sau: \\( R_${i + 1} = ${rowAfter} \\). ` +
+                       `Công thức: \\( R_${i + 1} \\gets R_${i + 1} - ${formatFraction(factor)} \\cdot R_${r + 1} \\).`
+            });
+          }
+        }
+
+        pivots.push({ row: r, col: c });
+        r++;
+        if (r >= m) break;
+      }
+
+      // Giai đoạn khử ngược (Back Substitution) nếu isRREF = true
+      if (isRREF) {
+        for (let k = pivots.length - 1; k >= 0; k--) {
+          const { row: r, col: c } = pivots[k];
+          for (let i = 0; i < r; i++) {
+            if (!math.equal(mat[i][c], 0)) {
+              const factor = mat[i][c];
+              const rowPivot = formatRow(mat[r]);
+              const rowBefore = formatRow(mat[i]);
+              for (let j = 0; j < n; j++) {
+                mat[i][j] = math.subtract(mat[i][j], math.multiply(factor, mat[r][j]));
+              }
+              const rowAfter = formatRow(mat[i]);
+              steps.push({
+                mat: cloneMatrix(mat),
+                explain: `⬆️ Lấy hàng ${i + 1} trừ ${formatFraction(factor)} lần hàng ${r + 1} để biến phần tử tại (${i + 1}, ${c + 1}) thành 0 (khử trên pivot cho RREF). ` +
+                         `Hàng pivot: \\( R_${r + 1} = ${rowPivot} \\). ` +
+                         `Trước: \\( R_${i + 1} = ${rowBefore} \\). Sau: \\( R_${i + 1} = ${rowAfter} \\). ` +
+                         `Công thức: \\( R_${i + 1} \\gets R_${i + 1} - ${formatFraction(factor)} \\cdot R_${r + 1} \\).`
+              });
+            }
+          }
+        }
+        steps.push({
+          mat: cloneMatrix(mat),
+          explain: `✅ Hoàn tất (RREF): Ma trận đã đạt dạng bậc thang rút gọn, với tất cả pivot bằng 1 và các phần tử khác trong cột pivot bằng 0.`
+        });
+      } else {
+        steps.push({
+          mat: cloneMatrix(mat),
+          explain: `✅ Hoàn tất (REF): Ma trận đã đạt dạng bậc thang, với tất cả pivot bằng 1 và các phần tử dưới pivot bằng 0.`
+        });
+      }
+
+      return steps;
+    }
+
+    function cloneMatrix(mat) {
+      return mat.map(row => row.map(el => math.clone(el)));
+    }
+
+    function nextStep() {
+      if (currentStep >= steps.length) {
+        const finalMessage = steps[steps.length - 1].explain;
+        document.getElementById('explanation').innerHTML = finalMessage;
+        document.getElementById('stepControls').querySelector('button[id="nextStepBtn"]').classList.add('disabled');
+        return;
+      }
+      const step = steps[currentStep];
+      displayMatrix(step.mat);
+      document.getElementById('explanation').innerHTML = step.explain;
+      MathJax.typesetPromise();
+      currentStep++;
+      document.getElementById('stepControls').querySelector('button[id="prevStepBtn"]').classList.remove('disabled');
+    }
+
+    function prevStep() {
+      if (currentStep <= 1) {
+        currentStep = 0;
+        document.getElementById('stepControls').querySelector('button[id="prevStepBtn"]').classList.add('disabled');
+        return;
+      }
+      currentStep -= 2;
+      const step = steps[currentStep];
+      displayMatrix(step.mat);
+      document.getElementById('explanation').innerHTML = step.explain;
+      MathJax.typesetPromise();
+      currentStep++;
+      document.getElementById('stepControls').querySelector('button[id="nextStepBtn"]').classList.remove('disabled');
+    }
+  </script>
+</body>
+</html>
