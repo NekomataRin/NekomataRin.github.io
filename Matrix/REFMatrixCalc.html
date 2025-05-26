@@ -28,6 +28,7 @@
     <label>Số hàng: <input id="rows" type="number" min="1" value="3" class="w-16 ml-2"></label>
     <label>Số cột: <input id="cols" type="number" min="1" value="3" class="w-16 ml-2"></label>
     <button id="generateMatrixBtn" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded">Tạo Ma trận</button>
+    <button id="randomMatrixBtn" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">Ma trận Ngẫu nhiên</button>
     <button id="resetBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">Đặt lại</button>
   </div>
 
@@ -62,11 +63,13 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('generateMatrixBtn').addEventListener('click', generateMatrix);
+      document.getElementById('randomMatrixBtn').addEventListener('click', () => generateMatrix(true)); // Thêm sự kiện cho nút ngẫu nhiên
       document.getElementById('resetBtn').addEventListener('click', reset);
       document.getElementById('gaussianREFBtn').addEventListener('click', () => startGaussian(false));
       document.getElementById('gaussianRREFBtn').addEventListener('click', () => startGaussian(true));
       document.getElementById('prevStepBtn').addEventListener('click', prevStep);
       document.getElementById('nextStepBtn').addEventListener('click', nextStep);
+      generateMatrix(); // Tạo ma trận ban đầu khi tải trang
     });
 
     let originalMatrix = [];
@@ -74,7 +77,7 @@
     let currentStep = 0;
     let isRREFMode = false;
 
-    function generateMatrix() {
+    function generateMatrix(isRandom = false) {
       const rowsInput = document.getElementById('rows');
       const colsInput = document.getElementById('cols');
       const errorDiv = document.getElementById('error');
@@ -90,6 +93,7 @@
       errorDiv.classList.add('hidden');
       const container = document.getElementById('matrixInputs');
       container.innerHTML = '';
+      resetCalculationState(); // Đặt lại trạng thái tính toán khi tạo ma trận mới
 
       for (let i = 0; i < rows; i++) {
         const row = document.createElement('div');
@@ -99,25 +103,82 @@
           input.type = 'text';
           input.id = `cell-${i}-${j}`;
           input.className = 'w-16 text-center';
-          input.placeholder = '0';
-          input.addEventListener('input', validateInput);
+          
+          if (isRandom) {
+            const randomNumber = Math.floor(Math.random() * 21) - 10; // Số ngẫu nhiên từ -10 đến 10
+            input.value = randomNumber.toString();
+          } else {
+            input.placeholder = '0';
+            input.value = ''; // Xóa giá trị cũ khi tạo ma trận mới thủ công
+          }
+          
+          input.addEventListener('input', validateAndStoreInput); // Sửa: Gắn hàm validateAndStoreInput
           row.appendChild(input);
         }
         container.appendChild(row);
       }
     }
 
-    function validateInput(e) {
+    // Biến để lưu trạng thái hợp lệ của tất cả các input
+    let allInputsValid = true;
+
+    function validateAndStoreInput(e) {
       const input = e.target;
-      const value = input.value;
-      if (value && !/^-?\d*\/?\d*$/.test(value)) {
-        input.classList.add('invalid');
-      } else {
+      const value = input.value.trim(); // Xóa khoảng trắng thừa
+      const errorDiv = document.getElementById('error');
+      
+      // Kiểm tra nếu input rỗng, coi là 0 nhưng không báo lỗi
+      if (value === '') {
         input.classList.remove('invalid');
+        checkOverallValidity();
+        return;
+      }
+
+      // Regex cho phép số nguyên, số thập phân, và phân số (ví dụ: 1/2, -3/4, 5)
+      const isValidFormat = /^-?\d+(\.\d+)?(\/-?\d+)?$/.test(value);
+
+      if (!isValidFormat) {
+        input.classList.add('invalid');
+        errorDiv.textContent = 'Giá trị không hợp lệ. Vui lòng nhập số nguyên, số thập phân hoặc phân số (ví dụ: 5, 3.14, 1/2).';
+        errorDiv.classList.remove('hidden');
+        allInputsValid = false;
+      } else {
+        try {
+          // Thử chuyển đổi sang phân số để đảm bảo math.js có thể xử lý
+          math.fraction(value);
+          input.classList.remove('invalid');
+          checkOverallValidity(); // Kiểm tra lại sau khi input này hợp lệ
+        } catch (e) {
+          input.classList.add('invalid');
+          errorDiv.textContent = 'Giá trị không hợp lệ. Vui lòng nhập số nguyên, số thập phân hoặc phân số (ví dụ: 5, 3.14, 1/2).';
+          errorDiv.classList.remove('hidden');
+          allInputsValid = false;
+        }
       }
     }
 
+    function checkOverallValidity() {
+      const inputs = document.querySelectorAll('#matrixInputs input');
+      let allCurrentlyValid = true;
+      inputs.forEach(input => {
+        if (input.classList.contains('invalid')) {
+          allCurrentlyValid = false;
+        }
+      });
+      allInputsValid = allCurrentlyValid; // Cập nhật biến toàn cục
+      if (allInputsValid) {
+        document.getElementById('error').classList.add('hidden');
+      }
+    }
+
+
     function getMatrixFromInputs() {
+      if (!allInputsValid) { // Kiểm tra trạng thái hợp lệ trước khi lấy ma trận
+        document.getElementById('error').textContent = 'Vui lòng sửa các giá trị không hợp lệ trong ma trận.';
+        document.getElementById('error').classList.remove('hidden');
+        return null;
+      }
+
       const rows = parseInt(document.getElementById('rows').value);
       const cols = parseInt(document.getElementById('cols').value);
       const matrix = [];
@@ -127,13 +188,14 @@
         const row = [];
         for (let j = 0; j < cols; j++) {
           const input = document.getElementById(`cell-${i}-${j}`);
-          const val = input.value || '0';
+          const val = input.value.trim() || '0'; // Nếu rỗng thì coi là 0
           try {
             row.push(math.fraction(val));
-            input.classList.remove('invalid');
           } catch (e) {
+            // Trường hợp này không nên xảy ra nếu validateAndStoreInput hoạt động đúng
+            // Nhưng vẫn giữ để phòng hờ
             input.classList.add('invalid');
-            errorDiv.textContent = `Giá trị không hợp lệ tại hàng ${i + 1}, cột ${j + 1}. Vui lòng nhập số hoặc phân số.`;
+            errorDiv.textContent = `Lỗi không xác định khi chuyển đổi giá trị tại hàng ${i + 1}, cột ${j + 1}.`;
             errorDiv.classList.remove('hidden');
             return null;
           }
@@ -145,6 +207,10 @@
     }
 
     function formatFraction(el) {
+      // Làm tròn các số rất nhỏ về 0 để tránh hiển thị 0/1000000000
+      if (math.abs(el.n) < 1e-9 && math.abs(el.d) > 0) { // Nếu tử số rất nhỏ
+        return '0';
+      }
       return math.equal(el.d, 1) ? `${el.n}` : `\\frac{${el.n}}{${el.d}}`;
     }
 
@@ -161,16 +227,24 @@
     }
 
     function reset() {
+      document.getElementById('rows').value = '3';
+      document.getElementById('cols').value = '3';
+      generateMatrix(); // Tạo lại ma trận 3x3 rỗng
+      resetCalculationState();
+      document.getElementById('error').classList.add('hidden');
+    }
+
+    function resetCalculationState() {
       originalMatrix = [];
       steps = [];
       currentStep = 0;
-      document.getElementById('matrixInputs').innerHTML = '';
       document.getElementById('matrixDisplay').innerHTML = '';
       document.getElementById('explanation').innerHTML = '';
       document.getElementById('stepControls').classList.add('hidden');
-      document.getElementById('error').classList.add('hidden');
-      document.getElementById('rows').value = '3';
-      document.getElementById('cols').value = '3';
+      document.getElementById('prevStepBtn').classList.add('disabled');
+      document.getElementById('nextStepBtn').classList.remove('disabled'); // Đảm bảo nút next không bị disabled sau reset
+      document.getElementById('stepCounter').textContent = '0/0';
+      allInputsValid = true; // Đặt lại trạng thái hợp lệ
     }
 
     function startGaussian(rrefMode) {
@@ -178,7 +252,10 @@
       
       // Lấy ma trận từ input
       const inputMatrix = getMatrixFromInputs();
-      if (!inputMatrix) return;
+      if (!inputMatrix) {
+        // Nếu có lỗi, không bắt đầu tính toán
+        return;
+      }
 
       // Lưu ma trận gốc
       originalMatrix = cloneMatrix(inputMatrix);
@@ -186,11 +263,11 @@
       // Tạo các bước tính toán
       steps = buildGaussianSteps(cloneMatrix(inputMatrix), rrefMode);
       
-      // Reset về bước đầu tiên
+      // Reset về bước đầu tiên và hiển thị
       currentStep = 0;
       document.getElementById('stepControls').classList.remove('hidden');
       updateStepCounter();
-      nextStep();
+      nextStep(); // Hiển thị bước đầu tiên
     }
 
     function buildGaussianSteps(mat, isRREF) {
@@ -207,22 +284,22 @@
       });
 
       // Giai đoạn khử xuôi (Forward Elimination)
-      for (let c = 0; c < n; c++) {
+      for (let c = 0; c < n && r < m; c++) {
         let pivotRow = -1;
-        let pivotValue = 0;
+        // Tìm hàng có pivot khác 0
         for (let i = r; i < m; i++) {
           if (!math.equal(mat[i][c], 0)) {
             pivotRow = i;
-            pivotValue = mat[i][c];
             break;
           }
         }
+        
         if (pivotRow === -1) {
           steps.push({
             mat: cloneMatrix(mat),
             explain: `🔍 Cột ${c + 1} không có phần tử khác 0 từ hàng ${r + 1} trở xuống. Chuyển sang cột tiếp theo.`
           });
-          continue;
+          continue; // Không có pivot ở cột này, chuyển sang cột tiếp theo
         }
 
         if (pivotRow !== r) {
@@ -231,7 +308,7 @@
           [mat[r], mat[pivotRow]] = [mat[pivotRow], mat[r]];
           steps.push({
             mat: cloneMatrix(mat),
-            explain: `🔄 Hoán đổi hàng ${r + 1} với hàng ${pivotRow + 1} để đưa phần tử khác 0 (${formatFraction(pivotValue)}) vào vị trí pivot ở cột ${c + 1}. ` +
+            explain: `🔄 Hoán đổi hàng ${r + 1} với hàng ${pivotRow + 1} để đưa phần tử khác 0 (${formatFraction(mat[r][c])}) vào vị trí pivot ở cột ${c + 1}. ` +
                      `Trước: \\( R_${r + 1} = ${rowSwap}, R_${pivotRow + 1} = ${rowBefore} \\). ` +
                      `Công thức: \\( R_${r + 1} \\leftrightarrow R_${pivotRow + 1} \\).`
           });
@@ -250,9 +327,12 @@
           });
         }
 
+        // Khử các phần tử dưới pivot
         for (let i = r + 1; i < m; i++) {
+          // Sử dụng pivot mới nhất (có thể đã bị chia 1 nếu RREF)
+          const currentPivotVal = mat[r][c]; 
           if (!math.equal(mat[i][c], 0)) {
-            const factor = isRREF ? mat[i][c] : math.divide(mat[i][c], mat[r][c]);
+            const factor = math.divide(mat[i][c], currentPivotVal);
             const rowPivot = formatRow(mat[r]);
             const rowBefore = formatRow(mat[i]);
             for (let j = 0; j < n; j++) {
@@ -270,15 +350,14 @@
         }
 
         pivots.push({ row: r, col: c });
-        r++;
-        if (r >= m) break;
+        r++; // Chuyển sang hàng tiếp theo cho pivot
       }
 
       // Giai đoạn khử ngược (Back Substitution) nếu isRREF = true
       if (isRREF) {
         for (let k = pivots.length - 1; k >= 0; k--) {
           const { row: r, col: c } = pivots[k];
-          for (let i = 0; i < r; i++) {
+          for (let i = 0; i < r; i++) { // Duyệt các hàng phía trên hàng pivot hiện tại
             if (!math.equal(mat[i][c], 0)) {
               const factor = mat[i][c];
               const rowPivot = formatRow(mat[r]);
@@ -318,21 +397,11 @@
     function updateStepCounter() {
       document.getElementById('stepCounter').textContent = `${currentStep}/${steps.length}`;
       
-      // Cập nhật trạng thái các nút
       const prevBtn = document.getElementById('prevStepBtn');
       const nextBtn = document.getElementById('nextStepBtn');
       
-      if (currentStep <= 1) {
-        prevBtn.classList.add('disabled');
-      } else {
-        prevBtn.classList.remove('disabled');
-      }
-      
-      if (currentStep >= steps.length) {
-        nextBtn.classList.add('disabled');
-      } else {
-        nextBtn.classList.remove('disabled');
-      }
+      prevBtn.classList.toggle('disabled', currentStep <= 1);
+      nextBtn.classList.toggle('disabled', currentStep >= steps.length);
     }
 
     function nextStep() {
@@ -349,7 +418,7 @@
     function prevStep() {
       if (currentStep <= 1) return;
       
-      currentStep -= 2;
+      currentStep -= 2; // Quay lại 2 bước để bước tiếp theo (currentStep++) hiển thị bước trước đó
       updateStepCounter();
       nextStep();
     }
