@@ -207,11 +207,26 @@
     }
 
     function formatFraction(el) {
-      // Làm tròn các số rất nhỏ về 0 để tránh hiển thị 0/1000000000
-      if (math.abs(el.n) < 1e-9 && math.abs(el.d) > 0) { // Nếu tử số rất nhỏ
-        return '0';
-      }
-      return math.equal(el.d, 1) ? `${el.n}` : `\\frac{${el.n}}{${el.d}}`;
+        // Làm tròn các số rất nhỏ về 0 để tránh hiển thị 0/1000000000
+        const epsilon = 1e-9; // Ngưỡng cho việc coi là 0
+        if (math.abs(el.n) < epsilon && el.d !== 0) {
+            return '0';
+        }
+
+        // Đảm bảo dấu âm được xử lý đúng cho cả số nguyên và phân số
+        if (el.s === -1 && el.n !== 0) { // Nếu là số âm và không phải 0
+            if (el.d === 1) {
+                return `-${el.n}`; // Ví dụ: -5
+            } else {
+                return `-\\frac{${el.n}}{${el.d}}`; // Ví dụ: -1/2
+            }
+        } else { // Số dương hoặc 0
+            if (el.d === 1) {
+                return `${el.n}`; // Ví dụ: 5
+            } else {
+                return `\\frac{${el.n}}{${el.d}}`; // Ví dụ: 1/2
+            }
+        }
     }
 
     function formatRow(row) {
