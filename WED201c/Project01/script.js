@@ -37,9 +37,9 @@ const GetSong = async (map_id = Number, mod_value = Number) => {
         Artist: SongData.artist,
         StarRating: SR,
         Checked: true
-    }
+    };
     //console.log(obj.Background)
-    return obj
+    return obj;
 };
 
 
@@ -54,7 +54,7 @@ const run = async () => {
         for (var j in PreviewList[Keys[i]]) {
             total_maps++;
             Array.push([Keys[i], PreviewList[Keys[i]][j], Number(j) + 1])
-        }
+        };
     };
 
     let str = `<tr><th>Mods</th><th>Background</th><th>Map Name</th><th>Star Rating</th></tr>`;
@@ -65,15 +65,18 @@ const run = async () => {
         const str2 = Array[index][0] + Array[index][2];
         setTimeout(function () { }, 1000)
         //console.log(a)
-        if (a.Checked) index++;
-        str += `<tr><td class="center"><b>${str2}</b></td><td class="image"><img src="${a.Background}" alt="${a.MapID}l.png" width="200" height="100"></td><td><a = href="${a.MapURL}">${a.Artist} - ${a.MapName}</a></td><td class="center"><b>${a.StarRating}</b></td></tr>`;
+        if (a.Checked) {
+            index++;
+            str += `<tr><td class="center"><b>${str2}</b></td><td class="image"><img src="${a.Background}" alt="${a.MapID}l.png" width="200" height="100"></td><td><a = href="${a.MapURL}">${a.Artist} - ${a.MapName}</a></td><td class="center"><b>${a.StarRating}</b></td></tr>`;
+        };
+
         if (cycle > 1000) {
             document.getElementById("PoolTable").innerHTML = `<p> Cannot fetch the API at this moment due to the rate limiting, please try again later. </p>`;
             break;
-        }
-    }
+        };
+    };
     if (index === total_maps) return document.getElementById("PoolTable").innerHTML = str;
-}
+};
 
 
 async function Click() {
