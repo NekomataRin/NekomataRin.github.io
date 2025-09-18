@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <title>Osu! Map Pool Example</title>
+    <meta name="author" content="NekomataRin">
+    <meta name="description" content="This is an example of a generic map pool for osu! game">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="HTML,CSS,JavaScript">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="./Assets/icon.png">
+    <style>
+        body {
+            padding: 25px;
+        }
+
+        th {
+            text-align: center;
+            height: 40px;
+            width: 120px;
+            padding: 10px;
+        }
+
+        tr:nth-child(1) {
+            height: 20px;
+            text-align: center;
+            background-color: #9f9f9f;
+            border-bottom: 3px solid #000000;
+        }
+
+        td {
+            height: 40px;
+            text-align: left;
+            border-bottom: 1px solid #000000;
+            border-color: #000000;
+            padding: 10px;
+        }
+
+        td.center {
+            text-align: center;
+            width: 100px;
+        }
+
+        td:nth-child(1) {
+            width: 30px;
+        }
+
+        td:nth-child(3) {
+            width: 450px;
+        }
+
+        td.image {
+            width: 200px;
+            height: 100px;
+        }
+
+        .btn {
+            background-color: #9c9c9c;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #4a4a4a;
+            border: #262626;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="https://raw.githubusercontent.com/NekomataRin/Odr2Assets/NekoRin's/mapPools.jpg" style="width: 50%"
+        alt="Archived Banner">
+    <div id="mapPoolSelect">
+        <h1 class="title"><i>This is an example of a generic map pool for osu! game</i></h1>
+        <h2><b>Map Pool Example: </b> <i>[Archived] osudroid!relax - 2nd Tournament Qualifier Round (v1)</i></h2>
+        <p>Please note that <b>this map pool</b> is already <em>ARCHIVED</em>, if you wanted to see the whole pool, then
+            click the button</p>
+        <input class="btn" id="InputBtn" type="button" value="Search" onClick="Click()">
+    </div>
+    <div id="TableContent">
+        <table id="PoolTable">
+        </table>
+    </div>
+    <div>
+        <ol>
+            <li><img src="https://raw.githubusercontent.com/NekomataRin/Odr2Assets/NekoRin's/mod-NM.png"
+                    style="width: 20px" alt="NM icon"><b>No Mod: </b> The default mod</li>
+            <li><img src="https://raw.githubusercontent.com/NekomataRin/Odr2Assets/NekoRin's/mod-HD.png"
+                    style="width: 20px" alt="HD icon"><b>Hidden: </b> Play with no approach
+                circles and
+                fading notes for a slight score advantage.</li>
+            <li><img src="https://raw.githubusercontent.com/NekomataRin/Odr2Assets/NekoRin's/mod-HR.png"
+                    style="width: 20px" alt="HR icon"><b>Hard Rock: </b> Everything just got
+                a bit harder…
+            </li>
+            <li><img src="https://raw.githubusercontent.com/NekomataRin/Odr2Assets/NekoRin's/mod-DT.png"
+                    style="width: 20px" alt="DT icon"><b>Double Time: </b> Zoooooooooom.</li>
+        </ol>
+    </div>
+    <script>
+        const MapIDList = {
+    Qualifier: {
+        NM: [2141415, 4098609, 2855075],
+        HD: [784368, 2417422, 1883834],
+        HR: [1850085, 3216883, 4113664],
+        DT: [2481649, 1009022, 3799726]
+    }
+};
+
+const ModValues = {
+    NM: 0,
+    HD: 8,
+    HR: 16,
+    DT: 64
+};
+
+
+const GetSong = async (map_id = Number, mod_value = Number) => {
+    const MapData = await fetch(`https://osu.direct/api/v2/b/${map_id}`).then(a => a.json());
+
+    const MapSetID = MapData.beatmapset_id;
+    const SongData = await fetch(`https://osu.direct/api/v2/s/${MapSetID}`).then(a => a.json());
+
+    const SRCalcURL = (mod_value > 0) ? `https://osu.direct/api/pp/${map_id}?mods=${mod_value}` : `https://osu.direct/api/pp/${map_id}`
+    const SRCalc = await fetch(SRCalcURL).then(a => a.json());
+    if ([429, 404].includes(SRCalc.code || MapData.code || SongData.code)) return { Checked: false };
+
+    //console.log(SRCalc.difficulty.stars);
+    const SR = SRCalc.difficulty.stars.toFixed(2);
+
+    const BackgroundURL = `https://b.ppy.sh/thumb/${MapSetID}l.jpg`;
+    const obj = {
+        Background: BackgroundURL,
+        MapURL: MapData.url,
+        MapID: MapData.id,
+        MapName: `${SongData.title} [${MapData.version}]`,
+        Artist: SongData.artist,
+        StarRating: SR,
+        Checked: true
+    }
+    //console.log(obj.Background)
+    return obj
+};
+
+
+
+const run = async () => {
+    let index = 0;
+    let total_maps = 0;
+    const PreviewList = MapIDList.Qualifier
+    const Array = [];
+    const Keys = Object.keys(PreviewList)
+    for (var i in Keys) {
+        for (var j in PreviewList[Keys[i]]) {
+            total_maps++;
+            Array.push([Keys[i], PreviewList[Keys[i]][j], Number(j) + 1])
+        }
+    };
+
+    let str = `<tr><th>Mods</th><th>Background</th><th>Map Name</th><th>Star Rating</th></tr>`;
+    let cycle = 1;
+    while (index < total_maps) {
+        cycle += 3;
+        const a = await GetSong(Array[index][1], ModValues[Array[index][0]]);
+        const str2 = Array[index][0] + Array[index][2];
+        setTimeout(function () { }, 1000)
+        //console.log(a)
+        if (a.Checked) index++;
+        str += `<tr><td class="center"><b>${str2}</b></td><td class="image"><img src="${a.Background}" alt="${a.MapID}l.png" width="200" height="100"></td><td><a = href="${a.MapURL}">${a.Artist} - ${a.MapName}</a></td><td class="center"><b>${a.StarRating}</b></td></tr>`;
+        if (cycle > 1000) {
+            document.getElementById("PoolTable").innerHTML = `<p> Cannot fetch the API at this moment due to the rate limiting, please try again later. </p>`;
+            break;
+        }
+    }
+    if (index === total_maps) return document.getElementById("PoolTable").innerHTML = str;
+}
+
+
+async function Click() {
+    const value = "Qualifier";
+    if (value) await run();
+}
+    </script>
+</body>
+
+</html>
