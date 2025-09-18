@@ -25,7 +25,7 @@ const GetSong = async (map_id = Number, mod_value = Number) => {
     const SRCalc = await fetch(SRCalcURL).then(a => a.json());
     if ([429, 404].includes(SRCalc.code || MapData.code || SongData.code)) return { Checked: false };
 
-    console.log(SRCalc.difficulty.stars);
+    //console.log(SRCalc.difficulty.stars);
     const SR = SRCalc.difficulty.stars.toFixed(2);
 
     const BackgroundURL = `https://b.ppy.sh/thumb/${MapSetID}l.jpg`;
@@ -38,7 +38,7 @@ const GetSong = async (map_id = Number, mod_value = Number) => {
         StarRating: SR,
         Checked: true
     }
-    console.log(obj.Background)
+    //console.log(obj.Background)
     return obj
 };
 
@@ -64,7 +64,7 @@ const run = async () => {
         const a = await GetSong(Array[index][1], ModValues[Array[index][0]]);
         const str2 = Array[index][0] + Array[index][2];
         setTimeout(function () { }, 1000)
-        console.log(a)
+        //console.log(a)
         if (a.Checked) index++;
         str += `<tr><td class="center"><b>${str2}</b></td><td class="image"><img src="${a.Background}" alt="${a.MapID}l.png" width="200" height="100"></td><td><a = href="${a.MapURL}">${a.Artist} - ${a.MapName}</a></td><td class="center"><b>${a.StarRating}</b></td></tr>`;
         if (cycle > 1000) {
