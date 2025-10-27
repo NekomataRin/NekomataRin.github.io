@@ -1,0 +1,160 @@
+body {
+  font-family: 'Ubuntu', sans-serif;
+  /* body - font family */
+  font-size: 15px;
+  /* body - font size */
+  background-color: #ddffee;
+  color: #000000;
+  line-height: 1.4;
+}
+
+header {
+  background-color: #e6e6e6;
+  /* header - background color */
+  color: #bdbdf6;
+  text-align: center;
+}
+
+header h1 {
+  text-align: center;
+  /* header - text alignment */
+  font-family: 'Rubik', serif;
+  /* header - font family */
+  color: #2f882e;
+  /* header - color */
+  margin: 10px 0;
+}
+
+nav {
+  display: inline-block;
+  background-color: #cacaca;
+  /* nav - background color */
+  margin-bottom: 10px;
+}
+
+nav ul {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+nav ul li {
+  display: inline-block;
+  /* li - display */
+  width: 150px;
+  /* li - width */
+}
+
+nav ul li a {
+  color: #2331ec;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+nav ul li a:hover {
+  color: rgb(102, 0, 102);
+}
+
+header img {
+  border: 2px solid black;
+  width: 10%;
+  position: relative;
+  top: 1.5rem;
+  left: 1.5rem;
+}
+
+main {
+  background-color: rgb(255, 255, 199);
+  /* main - background color */
+  font-size: 17px;
+  /* main - font size */
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+main p {
+  line-height: 1.4;
+  /* p - line height */
+  color: black;
+}
+
+main a {
+  color: #0300ad;
+  text-decoration: underline;
+}
+
+main a:hover {
+  color: rgb(102, 0, 102);
+}
+
+footer {
+  background-color: rgb(190, 190, 190);
+  /* footer - background color */
+  color: #000000;
+  text-align: center;
+  position: relative;
+  width: 100%;
+}
+
+footer a {
+  color: #1003fd;
+  text-decoration: underline;
+}
+
+footer a:hover {
+  color: rgb(102, 0, 102);
+}
+
+
+
+main div {
+  display: flexbox;
+  flex-wrap: wrap;
+}
+
+main div img {
+  border-radius: 5px;
+}
+
+
+.grid {
+  display: grid;
+  grid-template-columns: 40% 40%;
+  justify-content: space-between;
+  align-items: center;
+  row-gap: 1rem;
+  column-gap: 1.5rem;
+  background: transparent;
+  padding: 1rem 1.5rem;
+}
+
+.grid img {
+  width: 80%;
+  height: auto;
+  display: block;
+  background: #fff;
+}
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgb(255, 255, 199);
+}
+
+.gallery .row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.gallery .row img {
+  width: 18%;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
