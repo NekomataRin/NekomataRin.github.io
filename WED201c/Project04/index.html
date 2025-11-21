@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="NekomataRin">
+    <meta name="description" content="NekomataRin Info">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="HTML,CSS,JavaScript">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./src/Styles/index-s.css">
+    <link rel="icon" type="image/x-icon" href="./src/Assets/icon.png">
+    <title>Nekomata Rin - Index</title>
+</head>
+
+<body>
+    <script src="./src//Scripts/index-s.js"></script>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+        <nav>
+            <ul>
+                <li>Main Page</li>
+                <li><a href="./personalProjects.html">Personal Projects</a></li>
+                <li><a href="./testingPage.html">Testing Page</a></li>
+            </ul>
+        </nav>
+        <br>
+        <img class="banner" src="./src/Assets/Banner.jpeg" alt="Banner - Acid and Ris">
+    </header>
+
+    <main id="main">
+        <h1>--- Main Page ---</h1>
+        <hr>
+        <div class="row">
+            <img src="./src/Assets/Avt.png" alt="NekomataRin's Avatar">
+            <p id="User">Sup! I'm Nekomata Rin, or 'NekoRin' if you prefer. Frontend isn't my
+                strength, but Backend is obviously my comfort zone—it's where I truly thrive. Don't ask me what
+                keeps me busy on my Private Projects... The truth is, I'm just an honestly lazy person who
+                cares way more about writing solid code than about spending hours on web design.</p>
+            <script>
+                paraStyle("User", [
+                    { txt: "Nekomata Rin", color: 'c2' },
+                    { txt: "NekoRin", color: 'c2' },
+                    { txt: "Frontend", color: 'c3' },
+                    { txt: "strength", color: 'c4' },
+                    { txt: "Backend", color: 'c3' },
+                    { txt: "comfortzone", color: 'c5' },
+                    { txt: "Private Projects", color: 'c2' },
+                    { txt: 'lazy person', color: 'c2' }
+                ]);
+            </script>
+        </div>
+        <hr>
+        <div>
+            <p class="center">Wanna know more about me? Check my media down below:</p>
+        </div>
+
+        <div class="row2" id="Media">
+            <script>
+                mediaPut("Media", [
+                    { url: "https://github.com/NekomataRin/", icon: "./src/Assets/github.png", text: "NekomataRin" },
+                    { url: "https://discord.com/", icon: "./src/Assets/discord.png", text: "nekorin727" },
+                    { url: "https://x.com/nekorin727", icon: "./src/Assets/twitter.png", text: "nekorin727" },
+                ])
+            </script>
+        </div>
+
+    </main>
+</body>

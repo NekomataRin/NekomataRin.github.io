@@ -1,0 +1,131 @@
+body {
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 15px;
+    padding: 25px;
+    background-color: #272435;
+    color: #000000;
+    line-height: 1.4;
+}
+
+header {
+    width: 100%;
+    background-color: #1f1e33;
+    padding: 15px 0 25px;
+    display: flex;
+    border: 2px solid aliceblue;
+    border-radius: 20px;
+    flex-direction: column;
+    align-items: center;
+}
+
+header .banner {
+    width: 80%;
+    max-width: 1100px;
+    border: 2px solid aliceblue;
+    border-radius: 20px;
+}
+
+header nav ul {
+    list-style: none;
+    margin: 15px 0 0 0;
+    padding: 0;
+    color: #00eeee;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    gap: 0;
+    justify-content: center;
+}
+
+header nav ul li {
+    padding: 5px 30px;
+    border-right: 1px solid aliceblue;
+    transition: none;
+}
+
+header nav ul li:last-child {
+    border-right: none;
+}
+
+header nav ul li:hover {
+    background-color: transparent;
+    border-radius: 0;
+}
+
+header nav ul li a {
+    color: #00eeee;
+    text-decoration: none;
+    font-size: 17px;
+    transition: color 0.2s;
+    display: block;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+header nav ul li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: aliceblue;
+    transition: width 0.3s ease-out;
+}
+
+header nav ul li a:hover::after {
+    width: 100%;
+}
+
+header nav ul li a:hover {
+    opacity: 1;
+}
+
+main {
+    width: 100%;
+    max-width: 1200px;
+    border: 2px solid aliceblue;
+    border-radius: 20px;
+    margin: 20px auto;
+}
+
+main h1 {
+    color: aliceblue;
+    text-align: center;
+    font-weight: bold;
+}
+
+main p {
+    color: whitesmoke;
+    text-align: justify;
+    font-weight: 300;
+    margin: 10px 0;
+}
+
+hr {
+    border: none;
+    border-top: 2px solid aliceblue;
+    width: 80%;
+    margin: 20px auto;
+}
+
+.skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #1f1e33;
+    color: #00eeee;
+    padding: 10px 15px;
+    z-index: 1000;
+    transform: translateY(-120%);
+    transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.center {
+    font-weight: 400;
+    text-align: center;
+}

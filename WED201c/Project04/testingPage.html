@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="NekomataRin">
+    <meta name="description" content="Testing Page">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="HTML,CSS,JavaScript">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./src/Styles/testingPage.css">
+    <link rel="icon" type="image/x-icon" href="./src/Assets/icon.png">
+    <title>Nekomata Rin - Testing Page</title>
+</head>
+
+<body>
+    <script src="./src//Scripts/testingPage.js"></script>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="./index.html">Main Page</a></li>
+                <li><a href="./personalProjects.html">Personal Projects</a></li>
+                <li>Testing Page</li>
+            </ul>
+        </nav>
+        <br>
+        <img class="banner" src="./src/Assets/Banner.jpeg" alt="Banner - Acid and Ris">
+    </header>
+
+    <main id="main">
+        <h1>--- Testing Page ---</h1>
+        <hr>
+        <p class="center">[Archived] osu!droid Relax 2nd Tournament (v1) Round Of 16</p>
+        <p class="center">Please note that <b>this map pool</b> is already <em>ARCHIVED</em>, if you wanted to see the whole pool,
+            then click the button</p>
+        <p class="center">Also, sometimes the API will get rate limited, if you encounter this, please wait a few
+            minutes and try again.</p>
+
+        <div id="MapPoolControls" class="center">
+            <input class="btn" id="InputBtn" type="button" value="Click me!" onClick="Click()">
+        </div>
+
+        <div id="MapPool">
+            <table id="PoolTable">
+            </table>
+        </div>
+
+        <hr>
+        <p class="center">Mod Explanation From The Game</p>
+        <div id="ModExplanation">
+            <ol>
+                <li><img src="./src/Assets/mod-NM.png" style="width: 20px" alt="NM icon"><b>No Mod (NM):</b> The
+                    default
+                    mod</li>
+                <li><img src="./src/Assets/mod-HD.png" style="width: 20px" alt="HD icon"><b>Hidden (HD):</b> Play with
+                    no
+                    approach circles and fading notes for a slight score advantage.</li>
+                <li><img src="./src/Assets/mod-HR.png" style="width: 20px" alt="HR icon"><b>Hard Rock (HR):</b> 
+                    Everything
+                    just got a bit harder…</li>
+                <li><img src="./src/Assets/mod-DT.png" style="width: 20px" alt="DT icon"><b>Double Time (DT):</b> 
+                    Zoooooooooom.</li>
+            </ol>
+        </div>
+
+        <div>
+            <p><b>osu!</b> game by peppy (ppy) <a href="https://osu.ppy.sh/">(osu.ppy.sh)</a><br>API used: <a href="https://osu.direct/api/docs">(osu.direct)</a></p>
+        </div>
+    </main>
+</body>
