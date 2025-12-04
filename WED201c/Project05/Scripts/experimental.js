@@ -14,8 +14,8 @@ const Characters = [
         stats: {
             type: ["Balance", "Balance"],
             frag: ["50 (50)", "50 (50)"],
-            step: ["45 (83)", "45 (83)"],
-            over: ["12 (49)", "12 (49)"]
+            step: ["45 (83)", "83 (93)"],
+            over: ["12 (49)", "49 (59)"]
         },
         skill: [
             "Random fragment bonus upon completing song",
