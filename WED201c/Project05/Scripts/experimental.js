@@ -35,7 +35,7 @@ const Characters = [
             over: "39 (64)",
         },
 
-        skill: "EASY + Recollection Gauge starts at 30%\nReduced Recollection Rate gain per note"
+        skill: "EASY + Recollection Gauge starts at 30%<br>Reduced Recollection Rate gain per note"
     },
     {
         id: "lethe-apophenia",
@@ -72,7 +72,7 @@ const Characters = [
         },
         skill: [
             "(Lv8) Earn +5 Fragments when playing a 'Conflict Side' song",
-            "Pay the chart level in Fragments on start\nEarn +10 Fragments on EX or above"
+            "Pay the chart level in Fragments on start<br>Earn +10 Fragments on EX or above"
         ]
     },
     {
