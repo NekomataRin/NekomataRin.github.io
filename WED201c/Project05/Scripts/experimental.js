@@ -238,7 +238,7 @@ function getDesc(id, mode = 0) {
         <div class="info-title">ID: ${monospaceID}</div>
 
         <div class="info-section">
-            <strong>Type:</strong> ${type}
+            <strong>TYPE:</strong> ${type}
         </div>
 
         <div class="info-section">
